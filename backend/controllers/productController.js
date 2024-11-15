@@ -88,4 +88,43 @@ router.put('/update', async (req, res) => {
   }
 });
 
+router.delete('/delete', async (req, res) => {
+  const { id } = req.body;
+
+  if (!id) {
+    return res.status(400).json({
+      errors: ['Product ID is required'],
+      message: 'Please provide the product ID in the request body',
+      data: null
+    });
+  }
+
+  try {
+    // Find and delete the product by ID
+    const product = await Product.findByIdAndDelete(id);
+
+    // If no product was found with the provided ID
+    if (!product) {
+      return res.status(404).json({
+        errors: ['Product not found'],
+        message: 'Product not found!',
+        data: null
+      });
+    }
+
+    // Return a success message
+    res.status(200).json({
+      errors: null,
+      message: 'Product deleted successfully!',
+      data: product
+    });
+  } catch (error) {
+    res.status(500).json({
+      errors: [error.message],
+      message: 'Something went wrong while deleting the product',
+      data: null
+    });
+  }
+});
+
 module.exports = { ProductController: router };
