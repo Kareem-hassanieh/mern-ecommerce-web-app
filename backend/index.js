@@ -2,7 +2,9 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
-const { UserController } = require('./controllers/UserController'); 
+const { UserController } = require('./controllers/userController'); 
+
+const { ProductController } = require('./controllers/productController'); 
 
 
 dotenv.config();
@@ -25,6 +27,8 @@ app.use(express.json());
 const prefix = '/api';
 const version = '/v1'
 app.use(prefix + version + '/user', UserController)
+
+app.use(prefix + version + '/product', ProductController)
 
 
 mongoose.connect(process.env.DATABASE_URL || '', clientOptions)
