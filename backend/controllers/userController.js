@@ -98,4 +98,35 @@ router.delete('/delete', async (req, res) => {
 });
 
 
+// Get a user by ID
+router.get('/:id', async (req, res) => {
+    const { id } = req.params; // Extract the ID from the URL parameters
+
+    try {
+        const user = await User.findById(id); // Find the user by ID
+
+        if (!user) {
+            return res.status(404).json({
+                errors: ['User not found'],
+                message: 'No user found with the provided ID',
+                data: null
+            });
+        }
+
+        res.status(200).json({
+            errors: null,
+            message: 'User retrieved successfully',
+            data: user
+        });
+    } catch (error) {
+        res.status(500).json({
+            errors: [error.message],
+            message: "Something went wrong while retrieving the user",
+            data: null
+        });
+    }
+});
+
+
+
 module.exports = { UserController: router };
