@@ -131,10 +131,10 @@ router.get('/:id', async (req, res) => {
   const { id } = req.params;
 
   try {
-    // Find the product by ID
+   
     const product = await Product.findById(id);
 
-    // If the product doesn't exist
+   
     if (!product) {
       return res.status(404).json({
         errors: ['Product not found'],
@@ -143,7 +143,7 @@ router.get('/:id', async (req, res) => {
       });
     }
 
-    // If the product is found
+  
     res.status(200).json({
       errors: null,
       message: 'Product retrieved successfully!',
