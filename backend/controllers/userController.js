@@ -29,5 +29,45 @@ router.post('/create', async (req, res) => {
     }
 });
 
-// Export the router for use in index.js
+router.put('/update', async (req, res) => {
+    const { id, name, email, password } = req.body; 
+
+    try {
+        if (!id) {
+            return res.status(400).json({
+                errors: ["User ID is required"],
+                message: "Please provide the user ID",
+                data: null
+            });
+        }
+
+        const updatedUser = await User.findByIdAndUpdate(
+            id,
+            { name, email, password }, 
+            { new: true, runValidators: true } 
+        );
+
+        if (!updatedUser) {
+            return res.status(404).json({
+                errors: ["User not found"],
+                message: "No user found with the given ID",
+                data: null
+            });
+        }
+
+        res.status(200).json({
+            errors: null,
+            message: 'User updated successfully!',
+            data: updatedUser
+        });
+    } catch (error) {
+        res.status(500).json({
+            errors: [error.message],
+            message: "Something went wrong!",
+            data: null
+        });
+    }
+});
+
+
 module.exports = { UserController: router };
