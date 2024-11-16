@@ -56,4 +56,53 @@ router.post('/create', async (req, res) => {
   }
 });
 
+router.post('/update', async (req, res) => {
+  const { cartId, items } = req.body; // Expect cartId and items in the request body
+
+  try {
+    // Find the cart
+    const cart = await Cart.findById(cartId);
+    if (!cart) {
+      return res.status(404).json({
+        errors: [`Cart with ID ${cartId} not found.`],
+        message: "Failed to update the cart.",
+        data: null,
+      });
+    }
+
+    // Calculate the new total price
+    let totalPrice = 0;
+    for (const item of items) {
+      const product = await Product.findById(item.product);
+      if (!product) {
+        return res.status(404).json({
+          errors: [`Product with ID ${item.product} not found.`],
+          message: "Failed to calculate total price.",
+          data: null,
+        });
+      }
+      totalPrice += product.price * item.quantity;
+    }
+
+    // Update the cart items and total price
+    cart.items = items;
+    cart.total_price = totalPrice;
+
+    // Save the updated cart to the database
+    await cart.save();
+
+    res.status(200).json({
+      errors: null,
+      message: "Cart updated successfully!",
+      data: cart,
+    });
+  } catch (error) {
+    res.status(500).json({
+      errors: [error.message],
+      message: "Something went wrong while updating the cart.",
+      data: null,
+    });
+  }
+});
+
 module.exports = { CartController: router };
