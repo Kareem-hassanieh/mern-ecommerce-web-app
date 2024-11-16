@@ -104,5 +104,38 @@ router.post('/update', async (req, res) => {
 });
 
 
+router.delete('/delete', async (req, res) => {
+  const { orderId } = req.body;
+
+  try {
+
+    const order = await Order.findById(orderId);
+
+    if (!order) {
+      return res.status(404).json({
+        errors: ['Order not found.'],
+        message: 'Cannot delete a non-existing order.',
+        data: null,
+      });
+    }
+
+   
+    await order.remove();
+
+    res.status(200).json({
+      errors: null,
+      message: 'Order deleted successfully!',
+      data: null,
+    });
+  } catch (error) {
+    res.status(500).json({
+      errors: [error.message],
+      message: 'Something went wrong while deleting the order.',
+      data: null,
+    });
+  }
+});
+
+
 
 module.exports = { OrderController: router };
