@@ -86,4 +86,36 @@ router.post('/update', async (req, res) => {
     });
   }
 });
+
+
+router.delete('/delete', async (req, res) => {
+  const { user, product } = req.body;
+
+  try {
+      // Check if the like exists
+      const like = await Like.findOne({ user, product });
+      if (!like) {
+          return res.status(404).json({
+              errors: ['Like not found'],
+              message: 'No like entry was found for the given user and product.',
+              data: null,
+          });
+      }
+
+      // Delete the like
+      await Like.deleteOne({ user, product });
+
+      res.status(200).json({
+          errors: null,
+          message: 'Like was successfully deleted.',
+          data: like, // Returning the deleted like for reference
+      });
+  } catch (error) {
+      res.status(500).json({
+          errors: [error.message],
+          message: 'Something went wrong while deleting the like.',
+          data: null,
+      });
+  }
+});
 module.exports = { LikeController: router };
