@@ -134,4 +134,34 @@ router.delete('/delete', async (req, res) => {
   }
 });
 
+
+router.get('/:id', async (req, res) => {
+  const { id } = req.params; // Extract the cart ID from the URL
+
+  try {
+    // Find the cart by ID
+    const cart = await Cart.findById(id).populate('user', 'name email'); // Optionally populate user info if needed
+
+    if (!cart) {
+      return res.status(404).json({
+        errors: [`Cart with ID ${id} not found.`],
+        message: "Failed to retrieve the cart.",
+        data: null,
+      });
+    }
+
+    res.status(200).json({
+      errors: null,
+      message: "Cart retrieved successfully!",
+      data: cart,
+    });
+  } catch (error) {
+    res.status(500).json({
+      errors: [error.message],
+      message: "Something went wrong while retrieving the cart.",
+      data: null,
+    });
+  }
+});
+
 module.exports = { CartController: router };
