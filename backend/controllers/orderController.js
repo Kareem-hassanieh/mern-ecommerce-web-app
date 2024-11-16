@@ -53,4 +53,56 @@ router.post('/create', async (req, res) => {
     });
   }
 });
+
+router.post('/update', async (req, res) => {
+  const { orderId, shippingAddress, status } = req.body;
+
+  try {
+   
+    const order = await Order.findById(orderId);
+
+    if (!order) {
+      return res.status(404).json({
+        errors: ['Order not found.'],
+        message: 'Cannot update a non-existing order.',
+        data: null,
+      });
+    }
+
+ 
+    if (shippingAddress) {
+      order.shippingAddress = shippingAddress;
+    }
+
+    if (status) {
+      const validStatuses = ['Pending', 'Shipped', 'Delivered', 'Cancelled'];
+      if (!validStatuses.includes(status)) {
+        return res.status(400).json({
+          errors: ['Invalid status value.'],
+          message: `Status must be one of: ${validStatuses.join(', ')}`,
+          data: null,
+        });
+      }
+      order.status = status;
+    }
+
+   
+    await order.save();
+
+    res.status(200).json({
+      errors: null,
+      message: 'Order updated successfully!',
+      data: order,
+    });
+  } catch (error) {
+    res.status(500).json({
+      errors: [error.message],
+      message: 'Something went wrong while updating the order.',
+      data: null,
+    });
+  }
+});
+
+
+
 module.exports = { OrderController: router };
