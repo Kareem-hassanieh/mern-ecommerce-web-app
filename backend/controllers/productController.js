@@ -7,7 +7,7 @@ const router = express.Router();
 router.post('/create', async (req, res) => {
   const { name, description, price, pictures, category, number_of_reviews, sum_of_ratings } = req.body;
 
-  // Create a new Product instance
+ 
   const product = new Product({
       name,
       description,
