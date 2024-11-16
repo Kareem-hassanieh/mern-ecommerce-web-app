@@ -118,4 +118,38 @@ router.delete('/delete', async (req, res) => {
       });
   }
 });
+
+router.get('/:id', async (req, res) => {
+  const { id } = req.params;
+
+  try {
+      // Find the like by its _id
+      const like = await Like.findById(id)
+          // .populate('user', 'name email') // Populate user fields
+          // .populate('product', 'name description price'); // Populate product fields
+
+      if (!like) {
+          return res.status(404).json({
+              errors: ['Like not found'],
+              message: 'No like entry found with the provided ID.',
+              data: null,
+          });
+      }
+
+      res.status(200).json({
+          errors: null,
+          message: 'Like retrieved successfully!',
+          data: like,
+      });
+  } catch (error) {
+      res.status(500).json({
+          errors: [error.message],
+          message: 'Something went wrong while retrieving the like.',
+          data: null,
+      });
+  }
+});
+
+
+
 module.exports = { LikeController: router };
