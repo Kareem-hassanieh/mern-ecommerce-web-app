@@ -34,6 +34,7 @@ const CartSchema = new Schema({
   },
 });
 
+CartSchema.index({ user: 1 }, { unique: true });
 
 CartSchema.pre('save', async function (next) {
   const cart = this;

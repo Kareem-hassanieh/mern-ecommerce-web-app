@@ -8,6 +8,7 @@ const { ProductController } = require('./controllers/productController');
 
 const { ReviewController } = require('./controllers/ReviewController');
 const { LikeController } = require('./controllers/likeController');
+const { CartController } = require('./controllers/CartController');
 
 
 dotenv.config();
@@ -36,6 +37,8 @@ app.use(prefix + version + '/product', ProductController)
 app.use(prefix + version + '/review', ReviewController)
 
 app.use(prefix + version + '/like', LikeController)
+
+app.use(prefix + version + '/cart', CartController)
 
 mongoose.connect(process.env.DATABASE_URL || '', clientOptions)
     .then(() => console.log("Connected to MongoDB!"))
