@@ -247,6 +247,47 @@ router.delete('/delete', async (req, res) => {
 });
 
 
+router.get('/:id', async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    // Fetch the review by ID
+    const review = await Review.findById(id);
+
+    if (!review) {
+      return res.status(404).json({
+        errors: ["Review not found"],
+        message: "No review with the provided ID",
+        data: null,
+      });
+    }
+
+    // Manually fetch user and product details
+    const user = await User.findById(review.user, 'name email'); // Fetch specific fields
+    const product = await Product.findById(review.product, 'name description price'); // Fetch specific fields
+
+    // Construct a full response manually
+    const reviewWithDetails = {
+      ...review.toObject(),
+      user,
+      product,
+    };
+
+    res.status(200).json({
+      errors: null,
+      message: "Review retrieved successfully",
+      data: reviewWithDetails,
+    });
+  } catch (error) {
+    res.status(500).json({
+      errors: [error.message],
+      message: "Something went wrong while retrieving the review",
+      data: null,
+    });
+  }
+});
+
+
 
 
 
