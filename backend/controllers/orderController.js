@@ -136,6 +136,36 @@ router.delete('/delete', async (req, res) => {
   }
 });
 
+router.get('/:id', async (req, res) => {
+  const { id } = req.params; 
+
+  try {
+   
+    const order = await Order.findById(id);
+
+    if (!order) {
+      return res.status(404).json({
+        errors: ['Order not found.'],
+        message: 'The order with the given ID does not exist.',
+        data: null,
+      });
+    }
+
+   
+    res.status(200).json({
+      errors: null,
+      message: 'Order retrieved successfully!',
+      data: order,
+    });
+  } catch (error) {
+    res.status(500).json({
+      errors: [error.message],
+      message: 'Something went wrong while retrieving the order.',
+      data: null,
+    });
+  }
+});
+
 
 
 module.exports = { OrderController: router };
