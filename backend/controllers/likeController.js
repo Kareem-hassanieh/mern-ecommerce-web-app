@@ -44,4 +44,46 @@ router.post('/create', async (req, res) => {
   }
 });
 
+
+router.post('/update', async (req, res) => {
+  const { user, product } = req.body;
+
+  if (!user || !product) {
+    return res.status(400).json({
+      errors: ['User and Product fields are required'],
+      message: 'Invalid input',
+      data: null,
+    });
+  }
+
+  try {
+    
+    const existingLike = await Like.findOne({ user, product });
+
+    if (existingLike) {
+    
+      await existingLike.deleteOne();
+      return res.status(200).json({
+        errors: null,
+        message: 'Like removed successfully!',
+        data: null,
+      });
+    } else {
+      
+      const like = new Like({ user, product });
+      await like.save();
+      return res.status(200).json({
+        errors: null,
+        message: 'Like added successfully!',
+        data: like,
+      });
+    }
+  } catch (error) {
+    res.status(500).json({
+      errors: [error.message],
+      message: 'Something went wrong while toggling the like',
+      data: null,
+    });
+  }
+});
 module.exports = { LikeController: router };
