@@ -8,7 +8,7 @@ const router = express.Router();
 router.post('/create', async (req, res) => {
   const { userId, items } = req.body; 
   try {
-    // Check if a cart already exists for the user
+   
     const existingCart = await Cart.findOne({ user: userId });
     if (existingCart) {
       return res.status(400).json({
@@ -18,7 +18,7 @@ router.post('/create', async (req, res) => {
       });
     }
 
-    // Calculate the total price
+    
     let totalPrice = 0;
     for (const item of items) {
       const product = await Product.findById(item.product);
@@ -32,14 +32,14 @@ router.post('/create', async (req, res) => {
       totalPrice += product.price * item.quantity;
     }
 
-    // Create a new cart
+    
     const cart = new Cart({
       user: userId,
       items: items,
       total_price: totalPrice,
     });
 
-    // Save the cart to the database
+    
     await cart.save();
 
     res.status(201).json({
@@ -57,10 +57,10 @@ router.post('/create', async (req, res) => {
 });
 
 router.post('/update', async (req, res) => {
-  const { cartId, items } = req.body; // Expect cartId and items in the request body
+  const { cartId, items } = req.body; 
 
   try {
-    // Find the cart
+    
     const cart = await Cart.findById(cartId);
     if (!cart) {
       return res.status(404).json({
@@ -70,7 +70,7 @@ router.post('/update', async (req, res) => {
       });
     }
 
-    // Calculate the new total price
+  
     let totalPrice = 0;
     for (const item of items) {
       const product = await Product.findById(item.product);
@@ -84,11 +84,10 @@ router.post('/update', async (req, res) => {
       totalPrice += product.price * item.quantity;
     }
 
-    // Update the cart items and total price
+    
     cart.items = items;
     cart.total_price = totalPrice;
 
-    // Save the updated cart to the database
     await cart.save();
 
     res.status(200).json({
@@ -106,10 +105,10 @@ router.post('/update', async (req, res) => {
 });
 
 router.delete('/delete', async (req, res) => {
-  const { cartId } = req.body; // Expect cartId in the request body
+  const { cartId } = req.body; 
 
   try {
-    // Find the cart and delete it
+  
     const cart = await Cart.findByIdAndDelete(cartId);
 
     if (!cart) {
@@ -136,12 +135,10 @@ router.delete('/delete', async (req, res) => {
 
 
 router.get('/:id', async (req, res) => {
-  const { id } = req.params; // Extract the cart ID from the URL
-
+  const { id } = req.params; 
   try {
-    // Find the cart by ID
-    const cart = await Cart.findById(id).populate('user', 'name email'); // Optionally populate user info if needed
 
+    const cart = await Cart.findById(id).populate('user', 'name email');
     if (!cart) {
       return res.status(404).json({
         errors: [`Cart with ID ${id} not found.`],

@@ -228,7 +228,7 @@ router.delete('/delete', async (req, res) => {
     product.sum_of_ratings = sum_of_ratings;
     product.average_rating = average_rating;
 
-    // Save the updated product
+   
     await product.save();
 
     res.status(200).json({
@@ -251,7 +251,7 @@ router.get('/:id', async (req, res) => {
   const { id } = req.params;
 
   try {
-    // Fetch the review by ID
+    
     const review = await Review.findById(id);
 
     if (!review) {
@@ -262,11 +262,9 @@ router.get('/:id', async (req, res) => {
       });
     }
 
-    // Manually fetch user and product details
+   
     const user = await User.findById(review.user, 'name email'); // Fetch specific fields
-    const product = await Product.findById(review.product, 'name description price'); // Fetch specific fields
-
-    // Construct a full response manually
+    const product = await Product.findById(review.product, 'name description price'); 
     const reviewWithDetails = {
       ...review.toObject(),
       user,

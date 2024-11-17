@@ -16,7 +16,7 @@ router.post('/create', async (req, res) => {
   }
 
   try {
-    // Attempt to create a new like
+    
     const like = new Like({ user, product });
     await like.save();
 
@@ -26,7 +26,7 @@ router.post('/create', async (req, res) => {
       data: like,
     });
   } catch (error) {
-    // Handle unique index violation (duplicate like)
+  
     if (error.code === 11000) {
       return res.status(409).json({
         errors: ['You already liked this product'],
@@ -35,7 +35,7 @@ router.post('/create', async (req, res) => {
       });
     }
 
-    // Handle other errors
+    
     res.status(500).json({
       errors: [error.message],
       message: 'Something went wrong while adding the like',
@@ -65,7 +65,7 @@ router.post('/update', async (req, res) => {
       await existingLike.deleteOne();
       return res.status(200).json({
         errors: null,
-        message: 'Like removed successfully!',
+        message: 'Like removed ',
         data: null,
       });
     } else {
@@ -74,7 +74,7 @@ router.post('/update', async (req, res) => {
       await like.save();
       return res.status(200).json({
         errors: null,
-        message: 'Like added successfully!',
+        message: 'Like added ',
         data: like,
       });
     }
@@ -92,7 +92,7 @@ router.delete('/delete', async (req, res) => {
   const { user, product } = req.body;
 
   try {
-      // Check if the like exists
+  
       const like = await Like.findOne({ user, product });
       if (!like) {
           return res.status(404).json({
@@ -102,13 +102,13 @@ router.delete('/delete', async (req, res) => {
           });
       }
 
-      // Delete the like
+    
       await Like.deleteOne({ user, product });
 
       res.status(200).json({
           errors: null,
-          message: 'Like was successfully deleted.',
-          data: like, // Returning the deleted like for reference
+          message: 'Like deleted.',
+          data: like, 
       });
   } catch (error) {
       res.status(500).json({
@@ -123,10 +123,9 @@ router.get('/:id', async (req, res) => {
   const { id } = req.params;
 
   try {
-      // Find the like by its _id
+      
       const like = await Like.findById(id)
-          // .populate('user', 'name email') // Populate user fields
-          // .populate('product', 'name description price'); // Populate product fields
+          
 
       if (!like) {
           return res.status(404).json({
@@ -138,7 +137,7 @@ router.get('/:id', async (req, res) => {
 
       res.status(200).json({
           errors: null,
-          message: 'Like retrieved successfully!',
+          message: 'Like retrieved ',
           data: like,
       });
   } catch (error) {

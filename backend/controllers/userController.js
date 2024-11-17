@@ -1,9 +1,8 @@
 const express = require('express');
-const  User = require('../models/User'); // Adjust the path to your User model
+const User = require('../models/User'); 
 
 const router = express.Router();
 
-// Create a new user
 router.post('/create', async (req, res) => {
     const { password, email, name } = req.body;
 
@@ -30,7 +29,7 @@ router.post('/create', async (req, res) => {
 });
 
 router.put('/update', async (req, res) => {
-    const { id, name, email, password } = req.body; 
+    const { id, name, email, password } = req.body;
 
     try {
         if (!id) {
@@ -43,8 +42,8 @@ router.put('/update', async (req, res) => {
 
         const updatedUser = await User.findByIdAndUpdate(
             id,
-            { name, email, password }, 
-            { new: true, runValidators: true } 
+            { name, email, password },
+            { new: true, runValidators: true }
         );
 
         if (!updatedUser) {

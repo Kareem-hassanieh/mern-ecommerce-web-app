@@ -36,7 +36,7 @@ const OrderSchema = new Schema({
   },
   shippingAddress: {
     type: String,
-    required: true, // 
+    required: true, 
   },
 }, {
   timestamps: {

@@ -1,161 +1,166 @@
 const express = require('express');
-const  Product = require('../models/Product');
+const Product = require('../models/Product');
+const Like = require('../models/Like');
 
 const router = express.Router();
 
 
-router.post('/create', async (req, res) => {
-  const { name, description, price, pictures, category, number_of_reviews, sum_of_ratings } = req.body;
 
- 
-  const product = new Product({
+
+router.post('/create', async (req, res) => {
+  try {
+
+    const {
       name,
       description,
       price,
       pictures,
-      category,
-      number_of_reviews,
-      sum_of_ratings
-  });
+      category
 
-  try {
-      // Save the product to the database
-      await product.save();
-      res.status(200).json({
-          errors: null,
-          message: 'Product was created successfully!',
-          data: product
-      });
+    } = req.body;
+
+    if (!name || !description || !price || !pictures || !category) {
+      throw new Error("at least one of the required fields is required")
+    }
+
+    const product = new Product({
+      name,
+      description,
+      price,
+      pictures,
+      category
+    })
+
+    await product.save()
+    res.status(200).json(
+      {
+        errors: null,
+        message: 'Product created ',
+        data: product
+      }
+    )
   } catch (error) {
-      res.status(500).json({
-          errors: [error.message],
-          message: "Something went wrong while creating the product",
-          data: null
-      });
+    res.status(500).json({
+      errors: [error.message],
+      message: 'Something went wrong while creating the product',
+      data: null
+    })
   }
-});
+})
 
 
 
 router.put('/update', async (req, res) => {
-  const { id, name, description, price, pictures, category, number_of_reviews, sum_of_ratings } = req.body;
-
-  if (!id) {
-    return res.status(400).json({
-      errors: ['Product ID is required'],
-      message: 'Please provide the product ID in the request body',
-      data: null
-    });
-  }
 
   try {
-    // Find the product by ID and update it with the new data
-    const product = await Product.findByIdAndUpdate(
-      id,
-      {
-        name,
-        description,
-        price,
-        pictures,
-        category,
-        number_of_reviews,
-        sum_of_ratings
-      },
-      { new: true } // Return the updated product
-    );
 
-    // If the product was not found
-    if (!product) {
-      return res.status(404).json({
-        errors: ['Product not found'],
-        message: 'Product not found!',
-        data: null
-      });
+    const {
+      productId,
+      name,
+      description,
+      price,
+      pictures,
+      category
+    } = req.body;
+
+    //   or
+    // const productId = req.body.productId;
+    // const name = req.body.name;
+    // const description = req.body.description;
+    // const price = req.body.price;
+    // const pictures = req.body.pictures;
+    // const category = req.body.category;
+
+
+    if (!productId || !name || !description || !price || !pictures || !category) {
+      throw new Error("at least one of the required fields is required")
     }
 
-    // Return the updated product
+    const product = await product.findByIdAndUpdate(productId, {
+      name,
+      description,
+      price,
+      pictures,
+      category
+    }, { new: true });
+
+    //or 
+    // const product = await Product.findByIdAndUpdate(productId, {
+    //   name: name,
+    //   description: description,
+    //   price: price,
+    //   pictures: pictures,
+    //   category: category
+    // }, { new: true });
+
+
+
     res.status(200).json({
       errors: null,
-      message: 'Product updated successfully!',
+      message: 'Product updated successfully',
       data: product
-    });
+    })
   } catch (error) {
     res.status(500).json({
       errors: [error.message],
       message: 'Something went wrong while updating the product',
       data: null
-    });
-  }
-});
-
-router.delete('/delete', async (req, res) => {
-  const { id } = req.body;
-
-  if (!id) {
-    return res.status(400).json({
-      errors: ['Product ID is required'],
-      message: 'Please provide the product ID in the request body',
-      data: null
-    });
+    })
   }
 
+})
+
+
+
+router.delete('/delete', async function (req, res) {
   try {
-    // Find and delete the product by ID
-    const product = await Product.findByIdAndDelete(id);
-
-    // If no product was found with the provided ID
-    if (!product) {
-      return res.status(404).json({
-        errors: ['Product not found'],
-        message: 'Product not found!',
-        data: null
-      });
+    const { productId } = req.body;
+    if (!productId) {
+      throw new Error('productId is not found')
     }
+    await Product.findByIdAndDelete(productId);
 
-    // Return a success message
     res.status(200).json({
       errors: null,
-      message: 'Product deleted successfully!',
-      data: product
-    });
+      message: "Product deleted successfully",
+      data: null,
+    })
   } catch (error) {
-    res.status(500).json({
-      errors: [error.message],
-      message: 'Something went wrong while deleting the product',
-      data: null
-    });
+    res.status(500)(
+      {
+        errors: [error.message],
+        message: "some error occurred while deleting",
+        data: null,
+      }
+    )
   }
-});
+})
 
 router.get('/:id', async (req, res) => {
-  const { id } = req.params;
-
   try {
-   
+    const id = req.params.id;
     const product = await Product.findById(id);
-
-   
-    if (!product) {
-      return res.status(404).json({
-        errors: ['Product not found'],
-        message: 'No product found with the provided ID',
-        data: null
-      });
-    }
-
-  
+    const likes = await Like.find({
+      product: new mongoose.Types.ObjectId(id)
+    })
     res.status(200).json({
-      errors: null,
-      message: 'Product retrieved successfully!',
-      data: product
-    });
+      error: null,
+      message: 'product retrieved successfully',
+      data: { product, likes }
+      //or 
+      //data: {
+      //   product: product,
+      //   likes: likes
+      // }
+    })
   } catch (error) {
     res.status(500).json({
       errors: [error.message],
-      message: 'Something went wrong while retrieving the product',
-      data: null
-    });
+      message: 'something went wrong while retrieving the product',
+      data: null,
+    })
   }
-});
+
+})
 
 module.exports = { ProductController: router };
