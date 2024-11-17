@@ -3,6 +3,7 @@ const Product = require('../models/Product');
 const Like = require('../models/Like');
 
 const router = express.Router();
+const mongoose = require('mongoose'); 
 
 
 
@@ -76,7 +77,7 @@ router.put('/update', async (req, res) => {
       throw new Error("at least one of the required fields is required")
     }
 
-    const product = await product.findByIdAndUpdate(productId, {
+    const product = await Product.findByIdAndUpdate(productId, {
       name,
       description,
       price,

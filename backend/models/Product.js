@@ -21,6 +21,8 @@ const ProductSchema = new Schema({
     },
     category: {
         type: String,
+        enum: ['cars', 'pets', 'devices'],
+
         required: true
     },
     number_of_reviews: {
@@ -39,6 +41,6 @@ const ProductSchema = new Schema({
     }
 });
 
-// Create and export the Product model
+
 const Product = mongoose.model('Product', ProductSchema);
 module.exports = Product;

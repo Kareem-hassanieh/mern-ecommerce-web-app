@@ -14,7 +14,7 @@ const UserSchema = new Schema({
     unique: true,
     validate: {
       validator: function (v) {
-        return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v); // Email regex validation
+        return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v); 
       },
       message: 'Invalid email address.',
     },

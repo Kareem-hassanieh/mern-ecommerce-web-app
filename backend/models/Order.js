@@ -22,7 +22,7 @@ const OrderSchema = new Schema({
       price: {
         type: Number,
         required: true, 
-      },
+      },//because the price of the product might change due to sales so this is the final price for the product
     },
   ],
   totalAmount: {

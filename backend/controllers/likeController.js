@@ -2,47 +2,41 @@ const express = require('express');
 const Like = require('../models/Like'); 
 
 const router = express.Router();
+const mongoose = require('mongoose');
 
 
-router.post('/create', async (req, res) => {
-  const { user, product } = req.body;
+router.post('/create',async (req,res) => {
+  try{
+    const { userId, productId } = req.body;
+    if(!userId || !productId){
+      throw new Error('Missing required fields!');
+    }
+    const like =new Like ({
+      user:userId, 
+      product: productId
+    })
 
-  if (!user || !product) {
-    return res.status(400).json({
-      errors: ['User and Product fields are required'],
-      message: 'Invalid input',
-      data: null,
-    });
-  }
-
-  try {
-    
-    const like = new Like({ user, product });
     await like.save();
 
-    res.status(200).json({
-      errors: null,
-      message: 'Like added successfully!',
-      data: like,
-    });
-  } catch (error) {
-  
-    if (error.code === 11000) {
-      return res.status(409).json({
-        errors: ['You already liked this product'],
-        message: 'Duplicate like',
-        data: null,
-      });
-    }
+    res.status(200).json(
+      {
+        error:null,
+        message:"like created",
+        data:like
+      }
+    )
 
-    
+
+  }catch(error){
     res.status(500).json({
       errors: [error.message],
-      message: 'Something went wrong while adding the like',
-      data: null,
-    });
+      message:"Something went wrong while creating like",
+      data:null
+      
+    })
+
   }
-});
+})
 
 
 router.post('/update', async (req, res) => {
@@ -148,6 +142,48 @@ router.get('/:id', async (req, res) => {
       });
   }
 });
+
+router.get('/user-likes/:userId', async (req, res) => {
+  const { userId } = req.params;
+  const { page = 1, limit = 3 } = req.query; 
+
+  try {
+
+    if (!mongoose.Types.ObjectId.isValid(userId)) {
+      return res.status(400).json({
+        errors: ['Invalid user ID'],
+        message: 'Invalid input',
+        data: null,
+      });
+    }
+
+   
+    const likes = await Like.find({ user: userId })
+      .skip((page - 1) * limit)
+      .limit(parseInt(limit))
+      .exec();
+
+    res.status(200).json({
+      errors: null,
+      message: 'Likes retrieved successfully',
+      data: likes,
+      pagination: {
+        currentPage: parseInt(page),
+        pageSize: parseInt(limit),
+      },
+    });
+  } catch (error) {
+    res.status(500).json({
+      errors: [error.message],
+      message: 'Something went wrong while retrieving likes',
+      data: null,
+    });
+  }
+});
+
+
+
+
 
 
 
