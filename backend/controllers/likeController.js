@@ -182,8 +182,61 @@ router.get('/user-likes/:userId', async (req, res) => {
 });
 
 
+router.get('/search-liked-products/:userId', async (req, res) => {
+  const { userId } = req.params;
+  const { page = 1, limit = 3, name = "", category = "" } = req.query; 
 
+  try {
+  
+    if (!mongoose.Types.ObjectId.isValid(userId)) {
+      return res.status(400).json({
+        errors: ['Invalid user ID'],
+        message: 'Invalid input',
+        data: null,
+      });
+    }
 
+  
+    const searchQuery = {};
+
+   
+    if (name) searchQuery.name = { $regex: name, $options: 'i' };
+    
+   
+    if (category) searchQuery.category = { $regex: category, $options: 'i' }; 
+    
+    const likes = await Like.find({ user: userId })
+      .populate({
+        path: 'product',
+        match: searchQuery, 
+      })
+      .skip((page - 1) * limit) 
+      .limit(parseInt(limit))
+      .exec();
+
+ 
+    const filteredProducts = likes
+      .map(like => like.product) 
+      .filter(product => product !== null); 
+
+   
+    res.status(200).json({
+      errors: null,
+      message: 'Liked products retrieved successfully',
+      data: filteredProducts,
+      pagination: {
+        currentPage: parseInt(page),
+        pageSize: parseInt(limit),
+      },
+    });
+  } catch (error) {
+    res.status(500).json({
+      errors: [error.message],
+      message: 'Something went wrong while retrieving liked products',
+      data: null,
+    });
+  }
+});
 
 
 

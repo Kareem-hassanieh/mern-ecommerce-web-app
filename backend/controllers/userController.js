@@ -2,15 +2,34 @@ const express = require('express');
 const User = require('../models/User'); 
 
 const router = express.Router();
+const bcrypt = require('bcrypt');
 
 router.post('/create', async (req, res) => {
     const { password, email, name } = req.body;
 
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+
+    
+    if (!passwordRegex.test(password)) {
+
+
+        return res.status(400).json({
+            errors: ['Password validation failed'],
+            message: 'Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character.',
+            data: null
+        });
+    }
+
+   
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    
     const user = new User({
         name: name,
-        password: password,
+        password: hashedPassword,
         email: email
     });
+
 
     try {
         await user.save();
