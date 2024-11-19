@@ -12,6 +12,8 @@ const { CartController } = require('./controllers/CartController');
 
 const { OrderController } = require('./controllers/OrderController');
 
+const { AuthController } = require('./controllers/AuthController');
+
 
 dotenv.config();
 
@@ -43,6 +45,8 @@ app.use(prefix + version + '/like', LikeController)
 app.use(prefix + version + '/cart', CartController)
 
 app.use(prefix + version + '/order', OrderController)
+
+app.use(prefix + version + '/auth', AuthController)
 
 
 mongoose.connect(process.env.DATABASE_URL || '', clientOptions)
