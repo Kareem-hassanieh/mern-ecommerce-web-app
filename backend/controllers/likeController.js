@@ -1,16 +1,20 @@
 const express = require('express');
 const Like = require('../models/Like'); 
+const auth = require("../middleware/AuthMiddleware");
 
 const router = express.Router();
 const mongoose = require('mongoose');
 
 
-router.post('/create',async (req,res) => {
+router.post('/create',auth,async (req,res) => {
   try{
-    const { userId, productId } = req.body;
-    if(!userId || !productId){
+    const {productId } = req.body;
+    if( !productId){
       throw new Error('Missing required fields!');
     }
+
+    const userId = req.user._id;
+    
     const like =new Like ({
       user:userId, 
       product: productId

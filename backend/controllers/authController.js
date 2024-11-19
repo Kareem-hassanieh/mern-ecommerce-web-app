@@ -1,6 +1,6 @@
 const express = require('express');
 const bcrypt = require('bcrypt');
-const { signToken } = require('../utils/signToken'); 
+const  signToken  = require('../utils/signToken'); 
 const User = require('../models/User');
 
 const router = express.Router(); 
@@ -31,19 +31,16 @@ router.post('/login', async (req, res) => {
         }
 
       
-        const token = signToken({ userId: user._id, email: user.email });
+   
 
        
         res.status(200).json({
             errors: null,
             message: 'Login successful',
-            data: { token,
-                
-                user: { id: user._id, 
-                    name: user.name, 
-                    email: user.email } 
-                },
+            data: signToken(user),
+          
         });
+        console.log(data)
     } catch (error) {
         console.log(error);
         res.status(500).json({

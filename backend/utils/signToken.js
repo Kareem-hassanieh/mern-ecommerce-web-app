@@ -1,10 +1,9 @@
-
 const jwt = require('jsonwebtoken');
 
+const signToken = (user) => {
+    let token = jwt.sign({ ...user.toObject(), password: '' }, process.env.SECRET_KEY);
+    return token;
+};
 
-
-function signToken(payload, expiresIn = '1h') {
-    return jwt.sign(payload, process.env.SECRET_KEY, { expiresIn });
-}
-
-module.exports = { signToken };
+// Export using CommonJS syntax
+module.exports = signToken;
