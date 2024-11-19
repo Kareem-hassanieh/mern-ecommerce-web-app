@@ -25,10 +25,10 @@ const ProductSchema = new Schema({
 
         required: true
     },
-    number_of_reviews: {
-        type: Number,
-        required: true
-    },
+    // number_of_reviews: {
+    //     type: Number,
+    //     required: true
+// },
     sum_of_ratings: {
         type: Number,
         required: true,

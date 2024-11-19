@@ -4,48 +4,60 @@ const Like = require('../models/Like');
 
 const router = express.Router();
 const mongoose = require('mongoose'); 
+const ImageUpload = require('../middleware/ImageUpload');
 
 
 
 
-router.post('/create', async (req, res) => {
+
+router.post('/create', ImageUpload.array('pictures', 5), async (req, res) => {
   try {
+    
+      console.log(req.files)
+      
+      const pictures = req.files.map((file) => file.path)
+      
+      
+      
+      const {
+          name,
+          description,
+          price,
+          category,
+      } = req.body
 
-    const {
-      name,
-      description,
-      price,
-      pictures,
-      category
-
-    } = req.body;
-
-    if (!name || !description || !price || !pictures || !category) {
-      throw new Error("at least one of the required fields is required")
-    }
-
-    const product = new Product({
-      name,
-      description,
-      price,
-      pictures,
-      category
-    })
-
-    await product.save()
-    res.status(200).json(
-      {
-        errors: null,
-        message: 'Product created ',
-        data: product
+      if (
+          !name ||
+          !description ||
+          !price ||
+          !pictures.length ||
+          !category
+      ) {
+          throw new Error("At least one of the required fields is empty")
       }
-    )
+
+
+      const product = new Product({
+          name,
+          description,
+          price,
+          pictures,
+          category
+      })
+
+      await product.save()
+
+      res.status(200).json({
+          errors: null,
+          message: "Product created!",
+          data: product
+      })
   } catch (error) {
-    res.status(500).json({
-      errors: [error.message],
-      message: 'Something went wrong while creating the product',
-      data: null
-    })
+      res.status(500).json({
+          errors: [error.message],
+          message: "Something went wrong!",
+          data: null
+      })
   }
 })
 
