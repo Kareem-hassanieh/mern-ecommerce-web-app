@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import ProductsGallery from ".components/ProductsGallery"; 
+import ProductsGallery from "./components/ProductsGallery"; 
 
 
 function App() {
