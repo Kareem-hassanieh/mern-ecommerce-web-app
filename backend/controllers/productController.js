@@ -149,6 +149,24 @@ router.delete('/delete', async function (req, res) {
   }
 })
 
+router.get('/search',async (req,res)=>{
+  try{
+    const products=await Product.find();
+    res.status(200).json({
+      errors: null,
+      message: 'products fetched',
+      data: products
+    })
+  }catch(error){
+    console.log(error)
+    res.status(500).json({
+      errors: [error.message],
+      message: 'Something went wrong while fetching products',
+      data: null
+    })
+  }
+
+})
 router.get('/:id', async (req, res) => {
   try {
     const id = req.params.id;
