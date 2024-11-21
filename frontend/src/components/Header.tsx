@@ -7,9 +7,9 @@ import { faCar, faTshirt, faDog, faBook, faHeart } from "@fortawesome/free-solid
 
 function Header() {
   return (
-    <>
+    <div className='mb-[20px]'>
 
-      <div className='flex justify-between  items-center ml-[15px] mr-[15px]'>
+      <div className='flex justify-between  items-center ml-[15px] mr-[15px] '>
 
 
         <h1>Quik shop</h1>
@@ -53,7 +53,7 @@ function Header() {
 
 
       </div>
-    </>
+    </div>
 
   )
 }

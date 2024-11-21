@@ -135,8 +135,8 @@ function AddProductForm() {
             />
             <button
               type="submit"
-              className="bg-[#3682d8] rounded-lg p-[12px] ml-[auto] text-white"
-            >
+              className="text-xs font-bold px-2 py-3 bg-black rounded-md text-white ml-[auto] hover:bg-green-500 transition-colors duration-300">
+            
               Add Product
             </button>
           </div>
