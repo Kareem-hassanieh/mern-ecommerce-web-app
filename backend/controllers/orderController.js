@@ -1,58 +1,79 @@
 const express = require('express');
 const Order = require('../models/Order');
 const Cart = require('../models/Cart');
+const auth = require('../middleware/AuthMiddleware');
 
 const router = express.Router();
 
-router.post('/create', async (req, res) => {
-  const { user, shippingAddress } = req.body;
-
+router.post('/create', auth, async (req, res) => {
   try {
-    
-    const cart = await Cart.findOne({ user }).populate('items.product');
+       // @ts-ignore
+      const userId = req.user._id
+      const newOrder = {
+          products: [],
+          user: userId,
+          address: 'Address of the user',
+      }
 
-    if (!cart || cart.items.length === 0) {
-      return res.status(400).json({
-        errors: ['Cart is empty or does not exist.'],
-        message: 'Order cannot be created without items in the cart.',
-        data: null,
-      });
-    }
+      const cart = await Cart.findOne({
+          user: userId
+      })
 
-   
-    const totalAmount = cart.items.reduce(
-      (total, item) => total + item.quantity * item.product.price,
-      0
-    );
+      if (!cart) {
+          throw new Error('Cart is not found!')
+      }
+      let cartProducts = cart.products
 
-    
-    const order = new Order({
-      user,
-      items: cart.items, 
-      totalAmount,
-      shippingAddress,
-    });
+      // Get product info from DB
+      let productIds = cartProducts.map(item => item.product)
+      const products = await Product.find({
+          _id: {
+              $in: productIds
+          }
+      })
 
-    
-    await order.save();
+      newOrder.products = cartProducts.map((cartProduct) => {
+          // @ts-ignore
+          const targetProduct = products.find(product => product._id.toString() == cartProduct.product.toString())
+          return {
+              product: cartProduct.product,
+              quantity: cartProduct.quantity,
+              priceOfOne: targetProduct?.price
+          }
+      })
 
-   
-    cart.items = [];
-    await cart.save();
+      // at this point we can calculate total price
+      let totalPrice = 0
+      newOrder.products.forEach((product) => {
+          totalPrice = totalPrice + (product.quantity * product.priceOfOne)
+      })
+      newOrder.totalPrice = totalPrice
 
-    res.status(200).json({
-      errors: null,
-      message: 'Order created successfully!',
-      data: order,
-    });
+      // create order
+      const order = new Order(newOrder)
+      await order.save()
+
+      // clear cart
+      // await Cart.findOneAndUpdate({
+      //     user: userId
+      // },
+      //     { ...cart, products: [] },
+      //     { new: true }
+      // )
+
+      res.status(200).json({
+          errors: null,
+          message: "Order created!",
+          data: order
+      })
   } catch (error) {
-    res.status(500).json({
-      errors: [error.message],
-      message: 'Something went wrong while creating the order',
-      data: null,
-    });
+      res.status(500).json({
+          errors: [error.message],
+          message: "Something went wrong!",
+          data: null
+      })
   }
-});
+})
 
 router.post('/update', async (req, res) => {
   const { orderId, shippingAddress, status } = req.body;

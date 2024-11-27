@@ -6,19 +6,53 @@ const router = express.Router();
 
 
 router.post('/create', async (req, res) => {
-  const { userId, items } = req.body; 
+  const { userId, items } = req.body;
+
   try {
-   
-    const existingCart = await Cart.findOne({ user: userId });
-    if (existingCart) {
-      return res.status(400).json({
-        errors: ["A cart already exists for this user."],
-        message: "Failed to create a new cart.",
-        data: null,
+    // Check if a cart exists for this user
+    let cart = await Cart.findOne({ user: userId });
+
+    if (cart) {
+      // Add new products or update quantities for existing ones
+      for (const newItem of items) {
+        const existingItemIndex = cart.items.findIndex(
+          (item) => item.product.toString() === newItem.product
+        );
+
+        if (existingItemIndex > -1) {
+          // If the product exists, update its quantity
+          cart.items[existingItemIndex].quantity += newItem.quantity;
+        } else {
+          // If the product doesn't exist, add it
+          cart.items.push(newItem);
+        }
+      }
+
+      // Recalculate total price
+      let totalPrice = 0;
+      for (const item of cart.items) {
+        const product = await Product.findById(item.product);
+        if (!product) {
+          return res.status(404).json({
+            errors: [`Product with ID ${item.product} not found.`],
+            message: "Failed to calculate total price.",
+            data: null,
+          });
+        }
+        totalPrice += product.price * item.quantity;
+      }
+      cart.total_price = totalPrice;
+
+      await cart.save();
+
+      return res.status(200).json({
+        errors: null,
+        message: 'Product added to existing cart successfully!',
+        data: cart,
       });
     }
 
-    
+    // If no cart exists, create a new one
     let totalPrice = 0;
     for (const item of items) {
       const product = await Product.findById(item.product);
@@ -32,14 +66,12 @@ router.post('/create', async (req, res) => {
       totalPrice += product.price * item.quantity;
     }
 
-    
-    const cart = new Cart({
+    cart = new Cart({
       user: userId,
-      items: items,
+      items,
       total_price: totalPrice,
     });
 
-    
     await cart.save();
 
     res.status(201).json({
@@ -55,6 +87,7 @@ router.post('/create', async (req, res) => {
     });
   }
 });
+
 
 router.post('/update', async (req, res) => {
   const { cartId, items } = req.body; 
@@ -134,14 +167,43 @@ router.delete('/delete', async (req, res) => {
 });
 
 
-router.get('/:id', async (req, res) => {
-  const { id } = req.params; 
-  try {
+// router.get('/:id', async (req, res) => {
+//   const { id } = req.params; 
+//   try {
 
-    const cart = await Cart.findById(id).populate('user', 'name email');
+//     const cart = await Cart.findById(id).populate('user', 'name email');
+//     if (!cart) {
+//       return res.status(404).json({
+//         errors: [`Cart with ID ${id} not found.`],
+//         message: "Failed to retrieve the cart.",
+//         data: null,
+//       });
+//     }
+
+//     res.status(200).json({
+//       errors: null,
+//       message: "Cart retrieved successfully!",
+//       data: cart,
+//     });
+//   } catch (error) {
+//     res.status(500).json({
+//       errors: [error.message],
+//       message: "Something went wrong while retrieving the cart.",
+//       data: null,
+//     });
+//   }
+// });
+
+router.get('/:userId', async (req, res) => {
+  const { userId } = req.params;  // Get the userId from the request params
+
+  try {
+    // Find the cart for this user
+    const cart = await Cart.findOne({ user: userId }).populate('items.product'); // Populate products in items
+
     if (!cart) {
       return res.status(404).json({
-        errors: [`Cart with ID ${id} not found.`],
+        errors: [`Cart not found for user with ID ${userId}`],
         message: "Failed to retrieve the cart.",
         data: null,
       });
@@ -160,5 +222,6 @@ router.get('/:id', async (req, res) => {
     });
   }
 });
+
 
 module.exports = { CartController: router };

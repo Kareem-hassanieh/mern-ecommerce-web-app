@@ -8,7 +8,9 @@ const { ReviewController } = require('./controllers/ReviewController');
 const { LikeController } = require('./controllers/likeController');
 const { CartController } = require('./controllers/CartController');
 const { OrderController } = require('./controllers/OrderController');
-const { AuthController } = require('./controllers/AuthController');
+
+
+
 const path = require('path');
 
 // Configure dotenv for environment variables
@@ -16,6 +18,8 @@ dotenv.config();
 
 // Initialize the Express app
 const app = express();
+
+app.use(express.json());
 
 // Enable CORS for all origins (you can restrict it to specific origins if needed)
 app.use(cors()); // CORS middleware should be applied after initializing the app
@@ -42,7 +46,7 @@ app.use(prefix + version + '/review', ReviewController);
 app.use(prefix + version + '/like', LikeController);
 app.use(prefix + version + '/cart', CartController);
 app.use(prefix + version + '/order', OrderController);
-app.use(prefix + version + '/auth', AuthController);
+
 
 // Connect to MongoDB and start the server
 mongoose.connect(process.env.DATABASE_URL || '', clientOptions)
