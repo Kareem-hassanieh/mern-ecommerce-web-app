@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import Header from './Header';
+import "../styles.css"
 
 function Cart() {
   const [cartItems, setCartItems] = useState([]);
@@ -56,36 +57,46 @@ function Cart() {
     <>
       <Header />
       <div className="p-4">
-        <h1 className="text-2xl mb-4">Your Cart</h1>
+        <h1 className="text-2xl mb-4 ml-[25px]">Your Cart</h1>
         {cartItems.length === 0 ? (
           <p>Your cart is empty.</p>
         ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="flex justify-between all">
             {/* Products Section */}
-            <div className="col-span-2">
-              <h2 className="text-xl font-bold mb-4">Products</h2>
+            <div className="w-[50%] ml-[25px] products">
+             
               <div className="flex flex-col gap-4">
                 {cartItems.map((item) => (
                   <div
                     key={item.product._id}
-                    className="flex items-center gap-4 border p-4 rounded shadow-md"
+                    className="flex items-center gap-4 border-b-2 p-4"
                   >
+                    <div className='w-[100px] h-[80px] mr-[10px]'>
                     <img
                       src={`http://localhost:5000/${item.product.pictures[0]}`}
                       alt={item.product.name}
-                      className="w-20 h-20 object-cover rounded"
+                      className="w-full h-full object-cover rounded"
                     />
-                    <div className="flex-grow">
+                    </div>
+                  
+                    <div className="flex-grow flex flex-col gap-[7px]">
                       <h2 className="text-lg font-bold">{item.product.name}</h2>
-                      <p className="text-sm text-gray-600">
-                        {item.product.description}
-                      </p>
+                    
                       <p>
-                        <b>Price:</b> ${item.product.price}
+                         ${item.product.price}
                       </p>
+                      <div className='flex justify-between'>
                       <p>
-                        <b>Quantity:</b> {item.quantity}
+                        Quantity: {item.quantity}
                       </p>
+                      <button
+                       
+                        className="text-sm font-bold px-2 py-1 bg-black rounded-md text-white hover:bg-red-500 transition-colors duration-300"
+                      >remove</button>
+
+
+                      </div>
+                     
                     </div>
                   </div>
                 ))}
@@ -93,13 +104,13 @@ function Cart() {
             </div>
 
             {/* Summary Section */}
-            <div className=" p-4 rounded ">
+            <div className=" p-4 rounded w-[30%] mx-auto flex flex-col gap-[10px] summary">
               <h2 className="text-xl font-bold mb-4">Cart Summary</h2>
-              <div className="flex justify-between mb-2">
+              <div className="flex justify-between mb-2 border-b-2 p-[10px] ">
                 <span>Total Items:</span>
                 <span>{calculateTotalItems()}</span>
               </div>
-              <div className="flex justify-between mb-4">
+              <div className="flex justify-between mb-4 border-b-2 p-[10px]">
                 <span>Total Price:</span>
                 <span>${calculateTotalPrice().toFixed(2)}</span>
               </div>
