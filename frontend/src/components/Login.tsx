@@ -32,11 +32,13 @@ function Login() {
       const data = await response.json();
 
       if (response.ok) {
+        console.log(data);
         setSuccess(data.message); // Success message
         
 
         // Save the token in localStorage
-        localStorage.setItem('authToken', data.data); // Assuming 'data.data' contains the JWT token
+        localStorage.setItem('authToken', data.data); 
+        console.log('Token saved:', localStorage.getItem('authToken'));// Assuming 'data.data' contains the JWT token
 
         // You can also redirect the user to another page after successful login
         // window.location.href = '/dashboard'; // or use React Router to navigate

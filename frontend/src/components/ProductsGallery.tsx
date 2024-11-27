@@ -19,39 +19,44 @@ function ProductsGallery() {
     getAllProducts();
   }, []);
 
-  async function handleAddToCart(productId: any) {
-    const userId = '67402ca5bb0b9c4fe4e3d765'; // Replace with the actual logged-in user ID
+  async function handleAddToCart(productId:any) {
+    const token = localStorage.getItem('authToken'); // Retrieve token from localStorage
+    if (!token) {
+      alert('Please log in to add items to your cart.');
+      return;
+    }
+
+    const cartUpdate = {
+      cart: {
+        [productId]: 1, // Set quantity to 1 for simplicity
+      },
+    };
 
     try {
-      const response = await fetch('http://localhost:5000/api/v1/cart/create', {
-        method: 'POST',
+      const response = await fetch('http://localhost:5000/api/v1/cart/update', {
+        method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`, // Include the token in the request
         },
-        body: JSON.stringify({
-          userId, // User ID for the cart
-          items: [
-            {
-              product: productId, // ID of the product to add
-              quantity: 1, // Default quantity
-            },
-          ],
-        }),
+        body: JSON.stringify(cartUpdate),
       });
 
       const result = await response.json();
-
       if (response.ok) {
         alert('Product added to cart successfully!');
+        console.log('Updated Cart:', result.data);
       } else {
-        alert(`Failed to add product to cart: ${result.message}`);
+        alert(result.message || 'Failed to add product to cart.');
+        console.error(result.errors);
       }
     } catch (error) {
       console.error('Error:', error);
-      alert('Something went wrong. Please try again.');
+      alert('An error occurred while adding the product to the cart.');
     }
   }
 
+ 
 
 
   return (
@@ -79,12 +84,12 @@ function ProductsGallery() {
 
                 <div>
                   <span className="flex justify-end">
-                    <button
-                      onClick={() => handleAddToCart(product._id)} // Pass product ID when clicked
-                      className="text-xs font-bold px-2 py-3 bg-black rounded-md text-white ml-[auto] hover:bg-green-500 transition-colors duration-300"
-                    >
-                      Add To Cart
-                    </button>
+                  <button
+                  onClick={() => handleAddToCart(product._id)} // Pass product ID
+                  className="text-xs font-bold px-2 py-3 bg-black rounded-md text-white ml-[auto] hover:bg-green-500 transition-colors duration-300"
+                >
+                  Add To Cart
+                </button>
                   </span>
 
                 </div>

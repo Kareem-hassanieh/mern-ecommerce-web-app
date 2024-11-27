@@ -76,11 +76,13 @@ router.post('/login', async (req, res) => {
 
         const token = signToken(user);
         console.log(token); // Log the token instead of undefined `data`
+      
 
         return res.status(200).json({
             errors: null,
             message: 'Login successful',
             data: token, // Provide the token as data
+            
         });
     } catch (error) {
         console.error(error);

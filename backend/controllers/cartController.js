@@ -1,58 +1,139 @@
 const express = require('express');
 const Cart = require('../models/Cart'); 
 const Product = require('../models/Product'); 
+const auth = require('../middleware/AuthMiddleware');
 
 const router = express.Router();
 
 
-router.post('/create', async (req, res) => {
-  const { userId, items } = req.body;
 
+router.get('/get', auth, async (req, res) => {
   try {
-    // Check if a cart exists for this user
-    let cart = await Cart.findOne({ user: userId });
+    const userId = req.user._id;
 
-    if (cart) {
-      // Add new products or update quantities for existing ones
-      for (const newItem of items) {
-        const existingItemIndex = cart.items.findIndex(
-          (item) => item.product.toString() === newItem.product
-        );
+    // Find the cart for the logged-in user and populate the product details
+    const cart = await Cart.findOne({ user: userId }).populate({
+      path: 'items.product',
+      model: 'Product',
+    });
 
-        if (existingItemIndex > -1) {
-          // If the product exists, update its quantity
-          cart.items[existingItemIndex].quantity += newItem.quantity;
-        } else {
-          // If the product doesn't exist, add it
-          cart.items.push(newItem);
-        }
-      }
-
-      // Recalculate total price
-      let totalPrice = 0;
-      for (const item of cart.items) {
-        const product = await Product.findById(item.product);
-        if (!product) {
-          return res.status(404).json({
-            errors: [`Product with ID ${item.product} not found.`],
-            message: "Failed to calculate total price.",
-            data: null,
-          });
-        }
-        totalPrice += product.price * item.quantity;
-      }
-      cart.total_price = totalPrice;
-
-      await cart.save();
-
+    if (!cart || cart.items.length === 0) {
       return res.status(200).json({
-        errors: null,
-        message: 'Product added to existing cart successfully!',
-        data: cart,
+        message: 'Your cart is empty!',
+        data: [],
       });
     }
 
-    // If no cart exists, create a new one
+    res.status(200).json({
+      message: 'Cart fetched successfully!',
+      data: cart.items, // Contains product details and quantities
+    });
+  } catch (error) {
+    console.error('Error fetching cart:', error);
+    res.status(500).json({
+      errors: [error.message],
+      message: 'Something went wrong!',
+    });
+  }
+});
+
+router.put('/update', auth, async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const cartItems = req.body.cart;
+
+    if (!cartItems || typeof cartItems !== 'object') {
+      return res.status(400).json({ message: 'Invalid cart format.' });
+    }
+
+    // Find the user's cart or initialize a new one
+    let cart = await Cart.findOne({ user: userId });
+
+    if (!cart) {
+      cart = new Cart({ user: userId, items: [] });
+    }
+
+    // Update quantities or add new products to the cart
+    Object.entries(cartItems).forEach(([productId, quantity]) => {
+      const existingItem = cart.items.find(item => item.product.toString() === productId);
+
+      if (existingItem) {
+        // Update quantity if the product already exists
+        existingItem.quantity += Number(quantity);
+      } else {
+        // Add new product to the cart
+        cart.items.push({ product: productId, quantity: Number(quantity) });
+      }
+    });
+
+    // Recalculate total price
+    await cart.save(); // `pre('save')` will handle the total price calculation
+
+    res.status(200).json({
+      errors: null,
+      message: 'Cart updated successfully!',
+      data: cart,
+    });
+  } catch (error) {
+    console.error('Error updating cart:', error);
+    res.status(500).json({
+      errors: [error.message],
+      message: 'Something went wrong!',
+      data: null,
+    });
+  }
+});
+
+// router.put('/update', auth, async (req, res) => {
+//   try {
+//     const userId = req.user._id;
+//     const cartItems = req.body.cart; // Assuming cart is an object with productId as keys
+
+//     if (!cartItems || typeof cartItems !== 'object') {
+//       return res.status(400).json({ message: 'Invalid cart format' });
+//     }
+
+//     const newItems = Object.entries(cartItems).map(([productId, quantity]) => ({
+//       product: productId,
+//       quantity: Number(quantity),
+//     }));
+
+//     const cart = await Cart.findOneAndUpdate(
+//       { user: userId },
+//       { $set: { items: newItems } },
+//       { upsert: true, new: true }
+//     );
+
+//     res.status(200).json({
+//       errors: null,
+//       message: 'Cart updated successfully!',
+//       data: cart,
+//     });
+//   } catch (error) {
+//     console.error('Error updating cart:', error);
+//     res.status(500).json({
+//       errors: [error.message],
+//       message: 'Something went wrong!',
+//       data: null,
+//     });
+//   }
+// });
+
+
+router.post('/create', async (req, res) => {
+  const { userId, items } = req.body; 
+  try {
+   
+    const existingCart = await Cart.findOne({ user: userId });
+    if (existingCart) {
+      return res.status(400).json({
+        errors: ["A cart already exists for this user."],
+        message: "Failed to create a new cart.",
+        data: null,
+      });
+    }
+
+    
     let totalPrice = 0;
     for (const item of items) {
       const product = await Product.findById(item.product);
@@ -66,12 +147,14 @@ router.post('/create', async (req, res) => {
       totalPrice += product.price * item.quantity;
     }
 
-    cart = new Cart({
+    
+    const cart = new Cart({
       user: userId,
-      items,
+      items: items,
       total_price: totalPrice,
     });
 
+    
     await cart.save();
 
     res.status(201).json({
@@ -87,6 +170,7 @@ router.post('/create', async (req, res) => {
     });
   }
 });
+
 
 
 router.post('/update', async (req, res) => {

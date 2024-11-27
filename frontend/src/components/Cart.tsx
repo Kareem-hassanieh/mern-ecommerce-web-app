@@ -1,105 +1,116 @@
 import React, { useEffect, useState } from 'react';
-// Correct import for jwt-decode
-import jwt_decode from 'jwt-decode'; 
 import Header from './Header';
 
-interface Product {
-  _id: string;
-  name: string;
-  description: string;
-  price: number;
-  pictures: string[];
-}
-
-interface CartItem {
-  product: Product;
-  quantity: number;
-}
-
-interface Cart {
-  items: CartItem[];
-}
-
 function Cart() {
-  const [cart, setCart] = useState<Cart | null>(null);  // Type the state
-  const [loading, setLoading] = useState<boolean>(true);  // Added loading state
-  const [error, setError] = useState<string | null>(null);  // Added error state
+  const [cartItems, setCartItems] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const token = localStorage.getItem('authToken');  // Get JWT from localStorage
+    async function fetchCart() {
+      const token = localStorage.getItem('authToken'); // Get token from local storage
+      if (!token) {
+        alert('Please log in to view your cart.');
+        return;
+      }
 
-    if (token) {
       try {
-        // Define the type of the decoded token
-        interface DecodedToken {
-          _id: string;
+        const response = await fetch('http://localhost:5000/api/v1/cart/get', {
+          headers: {
+            Authorization: `Bearer ${token}`, // Pass token in headers
+          },
+        });
+
+        const result = await response.json();
+        if (response.ok) {
+          setCartItems(result.data);
+        } else {
+          alert(result.message || 'Failed to fetch cart.');
         }
-
-        // Decode the token directly using jwt_decode (default import)
-        const decoded = jwt_decode<DecodedToken>(token);  // Decode and specify type
-        const userId = decoded._id;  // Get userId from decoded token
-
-        async function fetchCart() {
-          try {
-            const response = await fetch(`http://localhost:5000/api/v1/cart/${userId}`);
-            const result = await response.json();
-
-            if (response.ok) {
-              setCart(result.data);
-            } else {
-              setError(result.message || 'Failed to fetch cart');
-            }
-          } catch (err) {
-            setError('Error fetching cart data');
-          } finally {
-            setLoading(false);  // Ensure loading state is turned off
-          }
-        }
-
-        fetchCart();
       } catch (error) {
-        console.error('Error decoding token:', error);
-        setError('Invalid token');
+        console.error('Error fetching cart:', error);
+        alert('An error occurred while fetching the cart.');
+      } finally {
         setLoading(false);
       }
-    } else {
-      setError('User not logged in');
-      setLoading(false);
     }
+
+    fetchCart();
   }, []);
 
+  const calculateTotalPrice = () => {
+    return cartItems.reduce(
+      (total, item) => total + item.product.price * item.quantity,
+      0
+    );
+  };
+
+  const calculateTotalItems = () => {
+    return cartItems.reduce((total, item) => total + item.quantity, 0);
+  };
+
+  if (loading) {
+    return <p>Loading your cart...</p>;
+  }
+
   return (
-    <div>
+    <>
       <Header />
-      <h2 className="text-center text-2xl my-4">Your Cart</h2>
-
-      {loading && <p>Loading cart...</p>}
-      {error && <p className="text-red-500">{error}</p>}
-
-      {cart && !loading && !error ? (
-        <div className="cart-items">
-          {cart.items.length > 0 ? (
-            cart.items.map((item) => (
-              <div key={item.product._id} className="cart-item flex justify-between mb-4">
-                <img
-                  src={`http://localhost:5000/${item.product.pictures[0]}`}
-                  alt={item.product.name}
-                  className="w-16 h-16 object-cover"
-                />
-                <div className="item-info flex-1 ml-4">
-                  <h3>{item.product.name}</h3>
-                  <p>{item.product.description}</p>
-                  <p>Quantity: {item.quantity}</p>
-                  <p>${item.product.price}</p>
-                </div>
+      <div className="p-4">
+        <h1 className="text-2xl mb-4">Your Cart</h1>
+        {cartItems.length === 0 ? (
+          <p>Your cart is empty.</p>
+        ) : (
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Products Section */}
+            <div className="col-span-2">
+              <h2 className="text-xl font-bold mb-4">Products</h2>
+              <div className="flex flex-col gap-4">
+                {cartItems.map((item) => (
+                  <div
+                    key={item.product._id}
+                    className="flex items-center gap-4 border p-4 rounded shadow-md"
+                  >
+                    <img
+                      src={`http://localhost:5000/${item.product.pictures[0]}`}
+                      alt={item.product.name}
+                      className="w-20 h-20 object-cover rounded"
+                    />
+                    <div className="flex-grow">
+                      <h2 className="text-lg font-bold">{item.product.name}</h2>
+                      <p className="text-sm text-gray-600">
+                        {item.product.description}
+                      </p>
+                      <p>
+                        <b>Price:</b> ${item.product.price}
+                      </p>
+                      <p>
+                        <b>Quantity:</b> {item.quantity}
+                      </p>
+                    </div>
+                  </div>
+                ))}
               </div>
-            ))
-          ) : (
-            <p>Your cart is empty.</p>
-          )}
-        </div>
-      ) : null}
-    </div>
+            </div>
+
+            {/* Summary Section */}
+            <div className=" p-4 rounded ">
+              <h2 className="text-xl font-bold mb-4">Cart Summary</h2>
+              <div className="flex justify-between mb-2">
+                <span>Total Items:</span>
+                <span>{calculateTotalItems()}</span>
+              </div>
+              <div className="flex justify-between mb-4">
+                <span>Total Price:</span>
+                <span>${calculateTotalPrice().toFixed(2)}</span>
+              </div>
+              <button className="w-full py-2 bg-black text-white rounded hover:bg-green-500 transition">
+                Proceed to Checkout
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+    </>
   );
 }
 
