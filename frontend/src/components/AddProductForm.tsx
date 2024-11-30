@@ -13,7 +13,7 @@ function AddProductForm() {
   const [price, setPrice] = useState(0);
   const [category, setCategory] = useState("pets");
 
-  const handleSubmit = async (event) => {
+  const handleSubmit = async (event:any) => {
     event.preventDefault();
 
     const formData = new FormData();
@@ -45,7 +45,7 @@ function AddProductForm() {
 
   return (
     <div className="flex flex-col lg:flex-row gap-10">
-      <div className="bg-[#e0e0e0] w-full lg:w-[500px] p-4 text-[#333333] rounded-xl m-[20px]">
+      <div className="bg-[#E5E7EB] w-full lg:w-[500px] p-4 text-[#333333] rounded-xl m-[20px]">
         <h1 className="text-3xl font-bold mb-[15px]">Add a Product</h1>
         <form className="flex flex-col gap-2 " onSubmit={handleSubmit}>
           <div className={inputClasses}>
@@ -94,7 +94,7 @@ function AddProductForm() {
               onChange={(event) => setCategory(event.target.value)}
             >
               <option value="cars">Cars</option>
-              <option value="pets">Pets</option>
+              <option value="pets">pets</option>
               <option value="devices">Devices</option>
               <option value="shoes">Shoes</option>
             </select>

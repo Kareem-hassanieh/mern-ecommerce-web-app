@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from 'react-router-dom';
+import useAuthStore from '../store'; // Import the Zustand store
 
 function Login() {
   const [email, setEmail] = useState('');
@@ -8,7 +9,7 @@ function Login() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
-
+  const setAuthToken = useAuthStore((state:any) => state.setAuthToken); // Access setAuthToken from Zustand store
   const navigate = useNavigate();
 
   const handleSubmit = async (e:any) => {
@@ -18,7 +19,7 @@ function Login() {
     setSuccess('');
 
     try {
-      const response = await fetch('http://localhost:5000/api/v1/user/login', { // Replace with your actual API URL
+      const response = await fetch('http://localhost:5000/api/v1/user/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -33,15 +34,11 @@ function Login() {
 
       if (response.ok) {
         console.log(data);
-        setSuccess(data.message); // Success message
-        
+        setSuccess(data.message);
 
-        // Save the token in localStorage
-        localStorage.setItem('authToken', data.data); 
-        console.log('Token saved:', localStorage.getItem('authToken'));// Assuming 'data.data' contains the JWT token
+        // Store the token in Zustand and localStorage
+        setAuthToken(data.data); // Assuming 'data.data' contains the JWT token
 
-        // You can also redirect the user to another page after successful login
-        // window.location.href = '/dashboard'; // or use React Router to navigate
         navigate('/products-gallery');
       } else {
         setError(data.message || 'Login failed');
@@ -52,9 +49,8 @@ function Login() {
       setLoading(false);
     }
   };
-
   return (
-    <div className='flex'>
+    <div className="flex">
       <div
         className="w-[50%] bg-[#3AB397] h-[100vh] text-white text-4xl font-bold flex justify-center items-center text-center bg-cover bg-center"
         style={{ backgroundImage: "url('emerald-background-design_23-2150319798 - Copy.jpg')" }}
@@ -109,12 +105,12 @@ function Login() {
 
           <p className="text-center text-gray-600 mt-4">
             If you don't have an account yet,{' '}
-            <button className="text-[#018369] cursor-pointer hover:underline" onClick={()=>navigate('/signup')}>Click Here</button>
+            <button className="text-[#018369] cursor-pointer hover:underline" onClick={() => navigate('/signup')}>Click Here</button>
           </p>
         </form>
       </div>
     </div>
   );
-}
+};
 
 export default Login;

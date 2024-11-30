@@ -1,63 +1,55 @@
-import React from 'react'
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faShoppingCart } from "@fortawesome/free-solid-svg-icons";
-import { faUser } from "@fortawesome/free-solid-svg-icons";
-import { useNavigate } from "react-router-dom";
+import React, { useState } from 'react';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faShoppingCart, faUser, faHeart } from '@fortawesome/free-solid-svg-icons';
+import { useNavigate } from 'react-router-dom';
 
-import { faCar, faTshirt, faDog, faBook, faHeart } from "@fortawesome/free-solid-svg-icons";
-
-function Header() {
+function Header({ onSearch }: { onSearch: (query: string, category: string) => void }) {
   const navigate = useNavigate();
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState(''); // Add selectedCategory state
+
+
+
   return (
     <div className='mb-[20px]'>
-
-      <div className='flex justify-between  items-center ml-[15px] mr-[15px] '>
-
-
-        <h1>Quik shop</h1>
-
-
+      <div className='flex justify-between items-center ml-[15px] mr-[15px]'>
+        <h1>Quick Shop</h1>
         <div className='flex gap-[20px]'>
           <p>Home</p>
-          <button onClick={()=>navigate('/add-product')}>Add product</button>
-          <button onClick={()=>navigate('/orders')}>my orders</button>
-          <button onClick={()=>navigate('/cart')} ><FontAwesomeIcon icon={faShoppingCart} /></button>
-          <button onClick={()=>navigate('/')}><FontAwesomeIcon icon={faUser} /></button>
-          <p></p>
+          <button onClick={() => navigate('/add-product')}>Add Product</button>
+          <button onClick={() => navigate('/orders')}>My Orders</button>
+          <button onClick={() => navigate('/cart')}>
+            <FontAwesomeIcon icon={faShoppingCart} />
+          </button>
+          <button onClick={() => navigate('/')}>
+            <FontAwesomeIcon icon={faUser} />
+          </button>
         </div>
       </div>
 
       <div className='flex mt-[10px] ml-[15px] mr-[15px]'>
-
         <div className='flex gap-[15px]'>
-          <button>All</button>
-
-          <button><FontAwesomeIcon icon={faCar} /></button>
-
-          <button> <FontAwesomeIcon icon={faTshirt} /></button>
-
-          <button>
-            <FontAwesomeIcon icon={faDog} />
-          </button>
-          <button>
-            <FontAwesomeIcon icon={faBook} />
-          </button>
-
-
-
-
+          <button onClick={() => { setSearchQuery(''); setSelectedCategory('Shoes'); onSearch('', 'Shoes'); }}>Shoes</button>
+          <button onClick={() => { setSearchQuery(''); setSelectedCategory('devices'); onSearch('', 'devices'); }}>Devices</button>
+          <button onClick={() => { setSearchQuery(''); setSelectedCategory('cars'); onSearch('', 'cars'); }}>Cars</button>
+          <button onClick={() => { setSearchQuery(''); setSelectedCategory('pets'); onSearch('', 'pets'); }}>Pets</button>
         </div>
-
-        <input  className="flex-grow ml-[5px] mr-[5px] border-4" type="text" placeholder='search'></input>
-
-        <button className='mr-[15px]'> <FontAwesomeIcon icon={faHeart} /></button>
+        <input
+          className='flex-grow ml-[5px] mr-[5px] border-4'
+          type='text'
+          placeholder='Search'
+          value={searchQuery}
+          onChange={(e) => {
+            setSearchQuery(e.target.value);
+            onSearch(e.target.value, selectedCategory);
+          }}
+        />
 
 
 
       </div>
     </div>
-
-  )
+  );
 }
 
-export default Header
+export default Header;
