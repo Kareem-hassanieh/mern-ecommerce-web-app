@@ -1,20 +1,12 @@
-import { useState } from 'react';
+// Header.tsx
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faShoppingCart, faUser } from '@fortawesome/free-solid-svg-icons';
 import { useNavigate } from 'react-router-dom';
+import { useSearchStore  } from '../store/searchStore';
 
-function Header({
-  onSearch,
-  isLikedFilter,
-  toggleLikedFilter,
-}: {
-  onSearch: (query: string, category: string) => void;
-  isLikedFilter: boolean;
-  toggleLikedFilter: () => void;
-}) {
+function Header() {
   const navigate = useNavigate();
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('');
+  const { searchQuery, selectedCategory, isLikedFilter, setSearchQuery, setSelectedCategory, toggleLikedFilter } = useSearchStore ();
 
   return (
     <div className='mb-[20px]'>
@@ -35,10 +27,10 @@ function Header({
 
       <div className='flex mt-[10px] ml-[15px] mr-[15px]'>
         <div className='flex gap-[15px]'>
-          <button onClick={() => { setSearchQuery(''); setSelectedCategory('Shoes'); onSearch('', 'Shoes'); }}>Shoes</button>
-          <button onClick={() => { setSearchQuery(''); setSelectedCategory('devices'); onSearch('', 'devices'); }}>Devices</button>
-          <button onClick={() => { setSearchQuery(''); setSelectedCategory('cars'); onSearch('', 'cars'); }}>Cars</button>
-          <button onClick={() => { setSearchQuery(''); setSelectedCategory('pets'); onSearch('', 'pets'); }}>Pets</button>
+          <button onClick={() => { setSearchQuery(''); setSelectedCategory('Shoes'); }}>Shoes</button>
+          <button onClick={() => { setSearchQuery(''); setSelectedCategory('devices'); }}>Devices</button>
+          <button onClick={() => { setSearchQuery(''); setSelectedCategory('cars'); }}>Cars</button>
+          <button onClick={() => { setSearchQuery(''); setSelectedCategory('pets'); }}>Pets</button>
         </div>
 
         <input
@@ -46,10 +38,7 @@ function Header({
           type="text"
           placeholder="Search"
           value={searchQuery}
-          onChange={(e) => {
-            setSearchQuery(e.target.value);
-            onSearch(e.target.value, selectedCategory);
-          }}
+          onChange={(e) => setSearchQuery(e.target.value)}
         />
 
         <button onClick={toggleLikedFilter}>

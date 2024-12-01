@@ -1,16 +1,15 @@
 import { useEffect, useState } from 'react';
 import Header from './Header';
 
+import { useSearchStore  } from '../store/searchStore';
+
 function ProductsGallery() {
   const [products, setProducts] = useState<any[]>([]);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [isLikedFilter, setIsLikedFilter] = useState(false);
-  const toggleLikedFilter = () => {
-    setIsLikedFilter((prev) => !prev);
-  };
+
+  const { searchQuery, selectedCategory, isLikedFilter } = useSearchStore();
+
   async function getAllProducts(search = '', category = '', likedFilter = false) {
     setLoading(true);
     setError(null);
@@ -33,6 +32,7 @@ function ProductsGallery() {
       const result = await response.json();
       setProducts(result.data);
     } catch (err) {
+      //@ts-ignore
       setError(err.message);
     } finally {
       setLoading(false);
@@ -43,11 +43,8 @@ function ProductsGallery() {
     getAllProducts(searchQuery, selectedCategory, isLikedFilter);
   }, [searchQuery, selectedCategory, isLikedFilter]);
 
-
-
-
   const handleAddToCart = async (productId: string) => {
-    const token = localStorage.getItem('authToken'); // Retrieve token from localStorage
+    const token = localStorage.getItem('authToken');
     if (!token) {
       alert('Please log in to add items to your cart.');
       return;
@@ -55,7 +52,7 @@ function ProductsGallery() {
 
     const cartUpdate = {
       cart: {
-        [productId]: 1, // Set quantity to 1 for simplicity
+        [productId]: 1,
       },
     };
 
@@ -64,7 +61,7 @@ function ProductsGallery() {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`, // Include the token in the request
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify(cartUpdate),
       });
@@ -75,21 +72,14 @@ function ProductsGallery() {
         console.log('Updated Cart:', result.data);
       } else {
         alert(result.message || 'Failed to add product to cart.');
-        console.error(result.errors);
       }
     } catch (error) {
-      console.error('Error:', error);
       alert('An error occurred while adding the product to the cart.');
     }
   };
-  const handleSearch = (query: string, category: string, isLikedFilter: boolean) => {
-    setSearchQuery(query);
-    setSelectedCategory(category);
-    getAllProducts(query, category, isLikedFilter);
-  };
 
   const handleLike = async (productId: string) => {
-    const token = localStorage.getItem('authToken');  // Retrieve token from localStorage
+    const token = localStorage.getItem('authToken');
     if (!token) {
       alert('Please log in to like products.');
       return;
@@ -100,21 +90,18 @@ function ProductsGallery() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`, // Include the token in the request
+          Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ productId }), // Send product ID to the backend
+        body: JSON.stringify({ productId }),
       });
 
       const result = await response.json();
       if (response.ok) {
         alert('Product liked successfully!');
-        console.log('Like created:', result.data);
       } else {
         alert(result.message || 'Failed to like product.');
-        console.error(result.errors);
       }
     } catch (error) {
-      console.error('Error:', error);
       alert('An error occurred while liking the product.');
     }
   };
@@ -122,14 +109,7 @@ function ProductsGallery() {
 
   return (
     <>
-   <Header
-        onSearch={(query, category) => {
-          setSearchQuery(query);
-          setSelectedCategory(category);
-        }}
-        isLikedFilter={isLikedFilter}
-        toggleLikedFilter={toggleLikedFilter}
-      />
+  <Header />
 
 
       {loading && <p>Loading products...</p>} {/* Show loading indicator */}
