@@ -1,14 +1,17 @@
 const express = require('express');
 const Product = require('../models/Product');
 const Like = require('../models/Like');
+const auth = require("../middleware/AuthMiddleware");
+
+
 
 const router = express.Router();
-const mongoose = require('mongoose'); 
+
 const ImageUpload = require('../middleware/ImageUpload');
 
 
 
-router.get('/search', async (req, res) => {
+router.get('/search',auth, async (req, res) => {
   try {
       let args  = {}
       const category = req.query.category;
@@ -42,13 +45,10 @@ router.get('/search', async (req, res) => {
           args['price'] = priceRange
       }
       
-      const likedBy = req.query.likedBy
-      if(likedBy){
-          const likes = await Like.find({user:likedBy})
-          const productIds = likes.map(like=>like.product)
-          args['_id'] = {
-              $in : productIds
-          }
+      if (req.query.likedBy) {
+        const likes = await Like.find({ user: req.user._id });
+        const productIds = likes.map((like) => like.product);
+        args['_id'] = { $in: productIds };
       }
       //const products = await Product.find(args);
       // @ts-ignore

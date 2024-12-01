@@ -1,23 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import Header from './Header';
 import "../styles.css"
-import useAuthStore from '../store';
-
 
 function Cart() {
-
   const [cartItems, setCartItems] = useState([]);
   const [loading, setLoading] = useState(true);
 
-
-
-  const { token } = useAuthStore(); // Retrieve token from Zustand
-
   useEffect(() => {
     async function fetchCart() {
+      const token = localStorage.getItem('authToken'); // Get token from local storage
       if (!token) {
-        alert('Please log in to view your cart.');   
-        setLoading(false); // Stop loading if no token is found
+        alert('Please log in to view your cart.');
         return;
       }
 
@@ -30,7 +23,7 @@ function Cart() {
 
         const result = await response.json();
         if (response.ok) {
-          setCartItems(result.data); // Update cart items state
+          setCartItems(result.data);
         } else {
           alert(result.message || 'Failed to fetch cart.');
         }
@@ -38,25 +31,21 @@ function Cart() {
         console.error('Error fetching cart:', error);
         alert('An error occurred while fetching the cart.');
       } finally {
-        setLoading(false); // Stop loading after fetching
+        setLoading(false);
       }
     }
 
     fetchCart();
-  }, [token]);
+  }, []);
 
   const calculateTotalPrice = () => {
     return cartItems.reduce(
-
-
-      //@ts-ignore
       (total, item) => total + item.product.price * item.quantity,
       0
     );
   };
 
   const calculateTotalItems = () => {
-    // @ts-ignore
     return cartItems.reduce((total, item) => total + item.quantity, 0);
   };
 

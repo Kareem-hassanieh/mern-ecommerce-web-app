@@ -1,38 +1,50 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import Header from './Header';
 
 function ProductsGallery() {
   const [products, setProducts] = useState<any[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
-  const [loading, setLoading] = useState(false); // Added loading state
-  const [error, setError] = useState<string | null>(null); // Added error state
-
-  async function getAllProducts(search = '', category = '') {
-    setLoading(true); // Start loading
-    setError(null); // Reset error
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [isLikedFilter, setIsLikedFilter] = useState(false);
+  const toggleLikedFilter = () => {
+    setIsLikedFilter((prev) => !prev);
+  };
+  async function getAllProducts(search = '', category = '', likedFilter = false) {
+    setLoading(true);
+    setError(null);
     try {
-      const response = await fetch(
-        `http://localhost:5000/api/v1/product/search?search=${encodeURIComponent(search)}&category=${encodeURIComponent(category)}`
-      );
-      if (!response.ok) {
-        throw new Error('Failed to fetch products');
+      let url = `http://localhost:5000/api/v1/product/search?search=${encodeURIComponent(search)}&category=${encodeURIComponent(category)}`;
+      if (likedFilter) {
+        const token = localStorage.getItem('authToken');
+        if (token) url += `&likedBy=${token}`;
       }
+
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('authToken')}`,
+        },
+      });
+
+      if (!response.ok) throw new Error('Failed to fetch products');
+
       const result = await response.json();
       setProducts(result.data);
-    } catch (err: any) {
-      setError(err.message); // Set error if the request fails
-      console.error(err);
+    } catch (err) {
+      setError(err.message);
     } finally {
-      setLoading(false); // Stop loading
+      setLoading(false);
     }
   }
- 
 
   useEffect(() => {
-    getAllProducts(searchQuery, selectedCategory);
-  }, [searchQuery, selectedCategory]);
-  // Re-run whenever searchQuery or selectedCategory changes
+    getAllProducts(searchQuery, selectedCategory, isLikedFilter);
+  }, [searchQuery, selectedCategory, isLikedFilter]);
+
+
+
 
   const handleAddToCart = async (productId: string) => {
     const token = localStorage.getItem('authToken'); // Retrieve token from localStorage
@@ -70,15 +82,55 @@ function ProductsGallery() {
       alert('An error occurred while adding the product to the cart.');
     }
   };
-
-  const handleSearch = (query: string, category: string) => {
+  const handleSearch = (query: string, category: string, isLikedFilter: boolean) => {
     setSearchQuery(query);
     setSelectedCategory(category);
+    getAllProducts(query, category, isLikedFilter);
   };
+
+  const handleLike = async (productId: string) => {
+    const token = localStorage.getItem('authToken');  // Retrieve token from localStorage
+    if (!token) {
+      alert('Please log in to like products.');
+      return;
+    }
+
+    try {
+      const response = await fetch('http://localhost:5000/api/v1/like/create', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`, // Include the token in the request
+        },
+        body: JSON.stringify({ productId }), // Send product ID to the backend
+      });
+
+      const result = await response.json();
+      if (response.ok) {
+        alert('Product liked successfully!');
+        console.log('Like created:', result.data);
+      } else {
+        alert(result.message || 'Failed to like product.');
+        console.error(result.errors);
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      alert('An error occurred while liking the product.');
+    }
+  };
+
 
   return (
     <>
-      <Header onSearch={handleSearch} />
+   <Header
+        onSearch={(query, category) => {
+          setSearchQuery(query);
+          setSelectedCategory(category);
+        }}
+        isLikedFilter={isLikedFilter}
+        toggleLikedFilter={toggleLikedFilter}
+      />
+
 
       {loading && <p>Loading products...</p>} {/* Show loading indicator */}
 
@@ -90,7 +142,7 @@ function ProductsGallery() {
             <div className="card-top h-[50%]">
               <img
                 className="object-cover w-full h-full"
-                src={`http://localhost:5000/${product.pictures[1]}`}
+                src={`http://localhost:5000/${product.pictures[0]}`}
                 alt={product.name || 'Product Image'}
               />
             </div>
@@ -107,6 +159,12 @@ function ProductsGallery() {
               </div>
 
               <div>
+                <button
+                  className="bg-[red] text-white"
+                  onClick={() => handleLike(product._id)} // Trigger like functionality
+                >
+                  Like
+                </button>
                 <span className="flex justify-end">
                   <button
                     onClick={() => handleAddToCart(product._id)} // Pass product ID

@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import useAuthStore from '../store'; // Import the Zustand store
 
 function Login() {
   const [email, setEmail] = useState('');
@@ -9,10 +8,9 @@ function Login() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
-  const setAuthToken = useAuthStore((state:any) => state.setAuthToken); // Access setAuthToken from Zustand store
   const navigate = useNavigate();
 
-  const handleSubmit = async (e:any) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError('');
@@ -36,8 +34,8 @@ function Login() {
         console.log(data);
         setSuccess(data.message);
 
-        // Store the token in Zustand and localStorage
-        setAuthToken(data.data); // Assuming 'data.data' contains the JWT token
+        // Store the token in localStorage
+        localStorage.setItem('authToken', data.data); // Assuming 'data.data' contains the JWT token
 
         navigate('/products-gallery');
       } else {
@@ -49,6 +47,7 @@ function Login() {
       setLoading(false);
     }
   };
+
   return (
     <div className="flex">
       <div
@@ -105,12 +104,14 @@ function Login() {
 
           <p className="text-center text-gray-600 mt-4">
             If you don't have an account yet,{' '}
-            <button className="text-[#018369] cursor-pointer hover:underline" onClick={() => navigate('/signup')}>Click Here</button>
+            <button className="text-[#018369] cursor-pointer hover:underline" onClick={() => navigate('/signup')}>
+              Click Here
+            </button>
           </p>
         </form>
       </div>
     </div>
   );
-};
+}
 
 export default Login;

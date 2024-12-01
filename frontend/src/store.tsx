@@ -10,12 +10,11 @@ const useAuthStore = create<AuthState>()(
   persist(
     (set) => ({
       token: null, 
-      setAuthToken: (token) => set({ token }), // Action to set the token
+      setAuthToken: (token) => set({ token }), 
     }),
     {
-      name: 'auth-token', // The name of the storage key in localStorage (or sessionStorage)
       //@ts-ignore
-      getStorage: () => localStorage, // Use localStorage to persist the token
+      getStorage: () => localStorage, 
     }
   )
 );

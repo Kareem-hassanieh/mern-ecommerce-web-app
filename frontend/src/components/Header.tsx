@@ -1,14 +1,20 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faShoppingCart, faUser, faHeart } from '@fortawesome/free-solid-svg-icons';
+import { faShoppingCart, faUser } from '@fortawesome/free-solid-svg-icons';
 import { useNavigate } from 'react-router-dom';
 
-function Header({ onSearch }: { onSearch: (query: string, category: string) => void }) {
+function Header({
+  onSearch,
+  isLikedFilter,
+  toggleLikedFilter,
+}: {
+  onSearch: (query: string, category: string) => void;
+  isLikedFilter: boolean;
+  toggleLikedFilter: () => void;
+}) {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState(''); // Add selectedCategory state
-
-
+  const [selectedCategory, setSelectedCategory] = useState('');
 
   return (
     <div className='mb-[20px]'>
@@ -34,10 +40,11 @@ function Header({ onSearch }: { onSearch: (query: string, category: string) => v
           <button onClick={() => { setSearchQuery(''); setSelectedCategory('cars'); onSearch('', 'cars'); }}>Cars</button>
           <button onClick={() => { setSearchQuery(''); setSelectedCategory('pets'); onSearch('', 'pets'); }}>Pets</button>
         </div>
+
         <input
-          className='flex-grow ml-[5px] mr-[5px] border-4'
-          type='text'
-          placeholder='Search'
+          className="flex-grow ml-[5px] mr-[5px] border-4"
+          type="text"
+          placeholder="Search"
           value={searchQuery}
           onChange={(e) => {
             setSearchQuery(e.target.value);
@@ -45,8 +52,9 @@ function Header({ onSearch }: { onSearch: (query: string, category: string) => v
           }}
         />
 
-
-
+        <button onClick={toggleLikedFilter}>
+          {isLikedFilter ? 'Show All Products' : 'Show Liked Products'}
+        </button>
       </div>
     </div>
   );
