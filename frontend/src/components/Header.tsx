@@ -3,7 +3,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faShoppingCart, faUser } from '@fortawesome/free-solid-svg-icons';
 import { useNavigate } from 'react-router-dom';
 import { useSearchStore  } from '../store/searchStore';
-
+   
 function Header() {
   const navigate = useNavigate();
   const { searchQuery, selectedCategory, isLikedFilter, setSearchQuery, setSelectedCategory, toggleLikedFilter } = useSearchStore ();

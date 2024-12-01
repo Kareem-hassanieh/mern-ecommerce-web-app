@@ -3,108 +3,18 @@ import Header from './Header';
 
 import { useSearchStore  } from '../store/searchStore';
 
-function ProductsGallery() {
-  const [products, setProducts] = useState<any[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+import useProductStore from '../store/productStore';
 
+function ProductsGallery() {
+  const { products, loading, error, fetchProducts, handleAddToCart, handleLike } = useProductStore();
   const { searchQuery, selectedCategory, isLikedFilter } = useSearchStore();
 
-  async function getAllProducts(search = '', category = '', likedFilter = false) {
-    setLoading(true);
-    setError(null);
-    try {
-      let url = `http://localhost:5000/api/v1/product/search?search=${encodeURIComponent(search)}&category=${encodeURIComponent(category)}`;
-      if (likedFilter) {
-        const token = localStorage.getItem('authToken');
-        if (token) url += `&likedBy=${token}`;
-      }
-
-      const response = await fetch(url, {
-        method: 'GET',
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('authToken')}`,
-        },
-      });
-
-      if (!response.ok) throw new Error('Failed to fetch products');
-
-      const result = await response.json();
-      setProducts(result.data);
-    } catch (err) {
-      //@ts-ignore
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
-  }
-
   useEffect(() => {
-    getAllProducts(searchQuery, selectedCategory, isLikedFilter);
+    fetchProducts(searchQuery, selectedCategory, isLikedFilter);
   }, [searchQuery, selectedCategory, isLikedFilter]);
 
-  const handleAddToCart = async (productId: string) => {
-    const token = localStorage.getItem('authToken');
-    if (!token) {
-      alert('Please log in to add items to your cart.');
-      return;
-    }
-
-    const cartUpdate = {
-      cart: {
-        [productId]: 1,
-      },
-    };
-
-    try {
-      const response = await fetch('http://localhost:5000/api/v1/cart/update', {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(cartUpdate),
-      });
-
-      const result = await response.json();
-      if (response.ok) {
-        alert('Product added to cart successfully!');
-        console.log('Updated Cart:', result.data);
-      } else {
-        alert(result.message || 'Failed to add product to cart.');
-      }
-    } catch (error) {
-      alert('An error occurred while adding the product to the cart.');
-    }
-  };
-
-  const handleLike = async (productId: string) => {
-    const token = localStorage.getItem('authToken');
-    if (!token) {
-      alert('Please log in to like products.');
-      return;
-    }
-
-    try {
-      const response = await fetch('http://localhost:5000/api/v1/like/create', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ productId }),
-      });
-
-      const result = await response.json();
-      if (response.ok) {
-        alert('Product liked successfully!');
-      } else {
-        alert(result.message || 'Failed to like product.');
-      }
-    } catch (error) {
-      alert('An error occurred while liking the product.');
-    }
-  };
+  if (loading) return <p>Loading...</p>;
+  if (error) return <p>Error: {error}</p>;
 
 
   return (
@@ -141,13 +51,13 @@ function ProductsGallery() {
               <div>
                 <button
                   className="bg-[red] text-white"
-                  onClick={() => handleLike(product._id)} // Trigger like functionality
+                  onClick={() => handleLike(product._id)} 
                 >
                   Like
                 </button>
                 <span className="flex justify-end">
                   <button
-                    onClick={() => handleAddToCart(product._id)} // Pass product ID
+                    onClick={() => handleAddToCart(product._id)}
                     className="text-xs font-bold px-2 py-3 bg-black rounded-md text-white ml-[auto] hover:bg-green-500 transition-colors duration-300"
                   >
                     Add To Cart
